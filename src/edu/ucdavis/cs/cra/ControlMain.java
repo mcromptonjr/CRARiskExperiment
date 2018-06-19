@@ -1,11 +1,9 @@
 package edu.ucdavis.cs.cra;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.Socket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 
 import edu.ucdavis.cs.cra.sensors.CpuSensor;
@@ -53,13 +51,19 @@ public class ControlMain {
 			client = true;
 
 		// Connect to the command server on port 52017
-		Socket client = new Socket(server, 52017);
-		System.out.println("Connected!");
+//		Socket client = new Socket(server, 52017);
+//		System.out.println("Connected!");
 
 		// Open the input and output streams to the command server
-		DataOutputStream toServer = new DataOutputStream(client.getOutputStream());
-		BufferedReader fromServer = new BufferedReader(new InputStreamReader(client.getInputStream()));
+//		DataOutputStream toServer = new DataOutputStream(client.getOutputStream());
+//		BufferedReader fromServer = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
+		File dir = new File("commands/"+InetAddress.getLocalHost().getHostName());
+		dir.mkdir();
+		dir.setReadable(true, false);
+		dir.setExecutable(true, false);
+		dir.setWritable(true, false);
+		
 		// Keep track of our sensors and running threads for those sensors
 		ArrayList<Sensor> sensors = new ArrayList<Sensor>();
 		ArrayList<Thread> sThreads = new ArrayList<Thread>();
@@ -68,7 +72,11 @@ public class ControlMain {
 		while(true) {
 			// Wait for a command from the command server
 			System.out.println("Waiting for message from server...");
-			String message = fromServer.readLine();
+			while(dir.list().length == 0) {
+				Thread.sleep(10);
+			}
+			File f = dir.listFiles()[0];
+			String message = f.getName();
 			message = message.replace("\0", "");
 			System.out.println(message);
 			// This is a hack to prevent Java from complaining about the infinite while loop.
@@ -136,8 +144,9 @@ public class ControlMain {
 				}
 				
 				// Send the command server an acknowledgement that the command was received.
-				toServer.writeBytes("ack\n");
-				toServer.flush();
+				f.delete();
+//				toServer.writeBytes("ack\n");
+//				toServer.flush();
 			}
 			if(message.contains("malware")) {
 				// If the command was to start some malware, execute a shell command to start the appropriate malware
@@ -167,8 +176,9 @@ public class ControlMain {
 				processReader.start();
 				
 				// Send an acknowledgement to the server
-				toServer.writeBytes("ack\n");
-				toServer.flush();
+//				toServer.writeBytes("ack\n");
+//				toServer.flush();
+				f.delete();
 			}
 			if(message.contains("stop")) {
 				// This run is now stopping, clean up all running threads and processes
@@ -204,12 +214,14 @@ public class ControlMain {
 				
 				// Send the command server an acknowledgement, indicating that we have successfully stopped.
 				System.out.println("Sending ack to command server");
-				toServer.writeBytes("ack\n");
-				toServer.flush();
+//				toServer.writeBytes("ack\n");
+//				toServer.flush();
+				f.delete();
 			}
 		}
 
 		// Properly close the connection.
-		client.close();
+//		client.close();
+		dir.delete();
 	}
 }

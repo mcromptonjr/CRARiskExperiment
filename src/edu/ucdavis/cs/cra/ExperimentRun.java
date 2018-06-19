@@ -1,9 +1,6 @@
 package edu.ucdavis.cs.cra;
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,7 +60,7 @@ public class ExperimentRun {
 	 * @throws InterruptedException Thrown if this thread is interrupted outside of normal execution.
 	 * @throws IOException Thrown if {@link Socket} streams encounter an error.
 	 */
-	public void run(HashMap<String, Socket> sockets, HashMap<String, String> serverMap) throws InterruptedException, IOException {
+	public void run(HashMap<String, String> serverMap) throws InterruptedException, IOException {
 		// Keep track of the timestamp for when this run began (in milliseconds).
 		long start = System.currentTimeMillis();
 		System.out.println("About to sleep");
@@ -88,19 +85,37 @@ public class ExperimentRun {
 				// Loop through all of the nodes.
 				for(String host : serverMap.keySet()) {
 					// Get the associated Socket
-					Socket socket = sockets.get(serverMap.get(host));
+//					Socket socket = sockets.get(serverMap.get(host));
+					File dir = new File("commands/"+host);
 					// If there is no socket, this is an invalid node.
-					if(socket == null)
+					if(!dir.exists())
 						continue;
 					
-					// Grab the input and output streams.
-					BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-					OutputStream toClient = socket.getOutputStream();
+//					// Grab the input and output streams.
+//					BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//					OutputStream toClient = socket.getOutputStream();
+					
+					File com = null;
+					if(command.getCommand().contains("start")) {
+						com = new File(dir, command.getCommand() + " " + host + " " + id + " " + metadata);
+						com.createNewFile();
+						com.setReadable(true, false);
+						com.setExecutable(true, false);
+						com.setWritable(true, false);
+					} else {
+						com = new File(dir, command.getCommand());
+						com.createNewFile();
+						com.setReadable(true, false);
+						com.setExecutable(true, false);
+						com.setWritable(true, false);
+					}
+					
 					
 					// Keep sending the command until we receive an acknowledgement from the node.
 					// This is a bit redundant as TCP guarantees the message will send, but it makes me feel better.
-					String response = "";
-					while(response == null || !response.equals("ack")) {
+					while(com.exists()) {
+						Thread.sleep(10);
+						/**
 						// If it is the 'start' command, send some extra data to the node for reference.
 						if(command.getCommand().contains("start"))
 							toClient.write((command.getCommand() + " " + host + " " + id + " " + metadata + "\n").getBytes());	// Send the host name and run number when sending command to start
@@ -110,6 +125,7 @@ public class ExperimentRun {
 						// Receive a response from the node.
 						response = fromClient.readLine();
 						System.out.println("Response from client: " + response);
+						*/
 					}
 				}
 			} else {
@@ -117,22 +133,31 @@ public class ExperimentRun {
 				String client = serverMap.get(command.getClient());
 				System.out.println("Running command for: " + client);
 				// Get that client's Socket
-				Socket socket = sockets.get(client);
+//				Socket socket = sockets.get(client);
+				File dir = new File("commands/"+client);
 				
 				// If the socket is null, skip this command
-				if(socket == null)
+				if(!dir.exists())
 					continue;
 				// Get the socket's input and ouput streams
-				BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				DataOutputStream toClient = new DataOutputStream(socket.getOutputStream());
+//				BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//				DataOutputStream toClient = new DataOutputStream(socket.getOutputStream());
 				
 				// Keep sending the command until we receive an acknowledgement from the node.
 				// This is a bit redundant as TCP guarantees the message will send, but it makes me feel better.
-				String response = "";
-				while(!response.equals("ack")) {
-					System.out.println("Sending command: " + command.getCommand());
-					toClient.writeChars(command.getCommand() + "\n");
-					response = fromClient.readLine();
+//				String response = "";
+//				while(!response.equals("ack")) {
+//					System.out.println("Sending command: " + command.getCommand());
+//					toClient.writeChars(command.getCommand() + "\n");
+//					response = fromClient.readLine();
+//				}
+				File com = new File(dir, command.getCommand());
+				com.createNewFile();
+				com.setReadable(true, false);
+				com.setExecutable(true, false);
+				com.setWritable(true, false);
+				while(com.exists()) {
+					Thread.sleep(10);
 				}
 			}
 		}

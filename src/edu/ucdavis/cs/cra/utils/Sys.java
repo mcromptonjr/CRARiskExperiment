@@ -3,6 +3,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 
 
 /**
@@ -49,8 +50,21 @@ public class Sys {
 	 */
 	public static File createFile(String dir, String filename) throws IOException {
 		File df = new File(dir);
-		df.mkdirs();
+		Path path = df.toPath();
+		String curPath = "";
+		for(int i = 0; i < path.getNameCount(); i++) {
+			curPath += path.getName(i) + "/";
+			File d = new File(curPath);
+			d.setReadable(true, false);
+			d.setExecutable(true, false);
+			d.setWritable(true, false);
+			d.mkdir();
+		}
 		File file = new File(dir, filename);
+		file.setReadable(true, false);
+		file.setExecutable(true, false);
+		file.setWritable(true, false);
+		file.createNewFile();
 		return file;
 	}
 }

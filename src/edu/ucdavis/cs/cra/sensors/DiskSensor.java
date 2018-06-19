@@ -38,7 +38,7 @@ public class DiskSensor extends Sensor {
 				Scanner input = new Scanner(new File("/proc/diskstats"));
 				while(input.hasNextLine()) {
 					String line = input.nextLine();
-					if(line.contains("sda")) {
+					if(line.contains("vda")) {
 						String[] params = line.split(" +");
 						if(params.length < 12)
 							break;

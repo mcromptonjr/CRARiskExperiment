@@ -121,11 +121,21 @@ public class CommandMain {
 		}
 		smInput.close();
 		
-		// Open a server socket on port 52017
-		ServerSocket server = new ServerSocket(52017);
-		// Set the timeout to 0, which prevents reads from timing out.
-		server.setSoTimeout(0);
+		File comDir = new File("commands/");
+		comDir.mkdir();
 		
+		while(comDir.listFiles().length < serverMap.size()) {
+			Thread.sleep(1000);
+			for(String file : comDir.list())
+				System.out.println(file);
+		}
+		
+//		// Open a server socket on port 52017
+//		ServerSocket server = new ServerSocket(52017);
+//		// Set the timeout to 0, which prevents reads from timing out.
+//		server.setSoTimeout(0);
+		
+		/**
 		// Create a mapping of EXPERIMENTAL_NAMEs to client {@link Socket}
 		HashMap<String, Socket> sockets = new HashMap<>();
 		for(int i = 0; i < serverMap.size(); i++) {
@@ -140,6 +150,7 @@ public class CommandMain {
 			System.out.println(clientName);
 			sockets.put(clientName, client);
 		}
+		*/
 		
 		// Parse the Experiment.cfg file's JSON for each {@link ExperimentCommand} within each {@link ExperimentRun}
 		System.out.println("Jsoning");
@@ -185,7 +196,8 @@ public class CommandMain {
 			// Set the run metadata to the original run set
 			run.setMetadata("orig");
 			// Run the current experiment run
-			run.run(sockets, serverMap);
+//			run.run(sockets, serverMap);
+			run.run(serverMap);
 		}
 		
 		// This is safe as it is coming from clone...
@@ -211,11 +223,12 @@ public class CommandMain {
 					continue;
 				// Set the metadata to identify it as a duplicate and its id
 				run.setMetadata("dup"+(i-1));
-				run.run(sockets, serverMap);
+//				run.run(sockets, serverMap);
+				run.run(serverMap);
 			}
 		}
 		
 		// Properly close the server
-		server.close();
+//		server.close();
 	}
 }

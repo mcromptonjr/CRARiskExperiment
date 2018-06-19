@@ -58,11 +58,10 @@ public class TestClient {
 				System.out.println("Starting Client: " + host + " " + id + " " + metadata);
 			}
 		}
-		input.close();
 		System.out.println("Finished receiving client parameters");
 		
 		// Get the hostname of the database server
-		String server = "db";
+		String server = "DB";
 		if(args.length >=1 ) {
 			server = args[0];
 		}
@@ -105,7 +104,7 @@ public class TestClient {
 						lastNumReceived++;
 						
 					} catch (IOException e) {
-						e.printStackTrace();
+//						e.printStackTrace();
 					}
 				}
 				System.out.println("Data receive thread stopping");
@@ -119,7 +118,9 @@ public class TestClient {
 				Scanner input = new Scanner(System.in);
 				while(input.hasNextLine()) {
 					String line = input.nextLine();
+					System.out.println("Received message from control: " + line);
 					if(line.contains("stop")) {
+						System.out.println("Received stop message!");
 						stop = true;
 						break;
 					}
